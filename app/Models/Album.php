@@ -14,9 +14,9 @@ class Album extends Model
 
     public function getFirstPictureAttribute() 
     {
-        $firstPicPath = $this->pictures->first();
-        if($firstPicPath && Storage::exists($firstPicPath->path))
-            return asset(str_replace('public','storage',$firstPicPath->path));
+        $firstPic = $this->pictures->first();
+        if($firstPic)
+            return $firstPic->picture_path;
         else return asset('not_found.png');
     }
 

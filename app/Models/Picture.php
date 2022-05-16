@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Storage;
+use App\Helper\Helper;
 
 class Picture extends Model
 {
     public function getPicturePathAttribute() 
     {
-        if(Storage::exists($this->path))
-            return asset(str_replace('public','storage',$this->path));
+        $public_path  = Helper::pictures_dir()['public'] . '/' . $this->path;
+        $storage_path = Helper::pictures_dir()['storage'] . '/' . $this->path;
+        if(Storage::exists($public_path))
+            return asset($storage_path);
         else return asset('not_found.png');
     }
 

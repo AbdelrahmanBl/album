@@ -9,14 +9,17 @@ class Helper extends Model
 {
     static public function pictures_dir()
     {
-        return "public/pictures";
+        return [
+            "public" => "public/pictures",
+            "storage" => "storage/pictures",
+        ];
     }
 
     static public function addFile($file) 
     {
         $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $uniq = auth()->user()->id . '-' . $name . time();
-        $dir = Helper::pictures_dir();
+        $uniq = $name . auth()->user()->id . time();
+        $dir = Helper::pictures_dir()['public'];
         $file_name = "{$uniq}.{$file->extension()}";
         $path = "{$dir}/$file_name";
 
@@ -24,32 +27,44 @@ class Helper extends Model
         
 
         return [
-            'path' => $path,
+            'path' => $file_name,
             'name' => $name
         ];
     }
 
     static public function copy($copy_prictures,$album_to_id)
     {
-        $dir = Helper::pictures_dir();
+        $dir = Helper::pictures_dir()['public'];
         $pictures = [];
         foreach ($copy_prictures as $picture) {
-            $uniq = auth()->user()->id . '-' . $picture->name . time();
+            $uniq = $picture->name . auth()->user()->id . time();
             $extension = explode('.',$picture->path)[1];
             $new_path  = "{$dir}/{$uniq}.{$extension}";
-            Storage::copy($picture->path, $new_path);
+            $new_file_path = "{$uniq}.{$extension}";
+            Storage::copy("{$dir}/{$picture->path}", $new_path);
             
             $pictures[] = [
                 "album_id" => $album_to_id,
                 "name"     => $picture->name,
-                "path"     => $new_path,
+                "path"     => $new_file_path,
             ];
         }
         return $pictures;
     }
 
-    static public function delete_file($path)
+    static public function delete_album($album)
     {
+        $dir = Helper::pictures_dir()['public'];
+        $pictures = [];
+        foreach ($album->pictures as $picture) {
+            Helper::delete_file($picture->path);
+        }
+    }
+
+    static public function delete_file($file_name)
+    {
+        $dir = Helper::pictures_dir()['public'];
+        $path = "{$dir}/$file_name";
         if(Storage::exists($path))
             Storage::delete($path);
     }

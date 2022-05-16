@@ -147,6 +147,9 @@ class AlbumController extends Controller
         $album = Album::where('user_id',auth()->user()->id)->findOrFail((int) $album_id);
         
         $pictures = Helper::copy($album->pictures,$request->move_to_id);
+        Helper::delete_album($album);
+        Picture::whereIn('id',$album->pictures->pluck('id'))->delete();
+        
         if(count($pictures) > 0)
                 Picture::insert($pictures);
 
